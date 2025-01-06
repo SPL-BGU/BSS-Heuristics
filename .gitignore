@@ -1,0 +1,19 @@
+# Raw and final data
+data/
+results/
+
+# Compiled objects
+src/bin/
+src/objs/
+
+# CLion
+.idea/
+cmake-build-debug/
+CMakeLists.txt
+
+# Virtual env
+wvenv/
+venv/
+
+# Project exclude paths
+/cmake-build-debug-wsl/
