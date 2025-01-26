@@ -58,6 +58,12 @@ public:
                     ++i;
                 }
                 --i; // Adjust for the loop increment
+            } else if (arg == "-p" || arg == "--pdb") {
+                ArgParameters::verifyValidFlagValue(argc, argv, ++i);
+                this->pdb = argv[i];
+                if (this->pdb.back() != '/') {
+                    this->pdb += '/';
+                }
             } else {
                 std::cerr << "Error: Unknown argument: " << arg << std::endl;
                 exit(EXIT_FAILURE);
@@ -136,6 +142,12 @@ public:
         for (const auto &instance: params.instances) { os << instance << " "; }
         os << "\n";
 
+        if (params.pdb.empty()) {
+            os << "PDB dir not set " << "\n";
+        } else {
+            os << "PDB dir: " << params.pdb << "\n";
+        }
+
         return os;
     }
 
@@ -143,12 +155,13 @@ public:
         std::cout << "Usage: program [OPTIONS]\n\n";
         std::cout << "Options:\n";
         std::cout << "  -d, --domain <DOMAIN>          Specify the domain.\n";
-        std::cout << "  -i, --instances <R1 R2 R3>        Specify a list of instance ranges (e.g., 1-3 which represents"
+        std::cout << "  -i, --instances <R1 R2 R3>       Specify a list of instance ranges (e.g., 1-3 which represents "
                      "[1,3)) or single instances (i.e., 3).\n";
         std::cout << "  -ho, --heuristic-optimal <HEURISTIC>    Specify the optimal heuristic.\n";
         std::cout << "  -hg, --heuristic-greedy <HEURISTIC>    Specify the greedy heuristic.\n";
         std::cout << "  -a, --algorithms <A1 A2 ...>   Specify a list of algorithms.\n";
         std::cout << "  -w, --weights <W1 W2 ...>      Specify a list of heuristic weights.\n";
+        std::cout << "  -p, --pdb <DIR>    Specify the directory which contains the PDB files.\n";
         std::cout << "  --help                         Show this help message and exit.\n\n";
         std::cout << "Examples:\n";
         std::cout << "  program --domain planning -i 1-5 7 "
@@ -166,6 +179,7 @@ public:
     std::vector<int> instances;
     double epsilon = -1;
     double weight = -1;
+    std::string pdb;
 
 private:
     static void verifyValidFlagValue(int argc, char *argv[], int index) {

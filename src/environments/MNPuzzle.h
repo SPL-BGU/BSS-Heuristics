@@ -127,6 +127,7 @@ static bool operator!=(const MNPuzzleState<width, height> &l1, const MNPuzzleSta
 
 enum puzzleWeight {
 	kUnitWeight,
+    kHeavy,
 	kSquared,
 	kSquareRoot,
 	kSquarePlusOneRoot,
@@ -699,6 +700,7 @@ double MNPuzzle<width, height>::HCost(const MNPuzzleState<width, height> &state1
 					{
 						case kUnitWeight: man_dist += absDist; break;
 						case kUnitPlusFrac: man_dist += absDist*(1.0+1.0/(1.0+movingTile)); break;
+						case kHeavy: man_dist += absDist*(movingTile); break;
 						case kSquared: man_dist += absDist*(movingTile)*(movingTile); break;
 						case kSquareRoot: man_dist += absDist*sqrt(movingTile); break;
 						case kSquarePlusOneRoot:
@@ -787,6 +789,7 @@ double MNPuzzle<width, height>::GCost(const MNPuzzleState<width, height> &a, con
 	{
 		case kUnitWeight: return 1;
 		case kUnitPlusFrac: return (1.0+1.0/(1.0+a.puzzle[b.blank]));
+		case kHeavy: return a.puzzle[b.blank];
 		case kSquared: return a.puzzle[b.blank]*a.puzzle[b.blank];
 		case kSquareRoot: return sqrt(a.puzzle[b.blank]);
 		case kSquarePlusOneRoot: return sqrt(1+a.puzzle[b.blank]*a.puzzle[b.blank]);
@@ -842,6 +845,17 @@ double MNPuzzle<width, height>::GCost(const MNPuzzleState<width, height> &s, con
                 default: assert(!"Illegal move"); break;
 			}
 		}
+        case kHeavy:
+        {
+            switch (d)
+            {
+                case kLeft: return s.puzzle[s.blank-1];
+				case kUp: return s.puzzle[s.blank-width];
+				case kDown: return s.puzzle[s.blank+width];
+				case kRight: return s.puzzle[s.blank+1];
+                default: assert(!"Illegal move"); break;
+            }
+        }
 		case kSquared:
 		{
 			switch (d)

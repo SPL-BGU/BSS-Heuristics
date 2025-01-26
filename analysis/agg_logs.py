@@ -28,6 +28,7 @@ def parse_dir(dir_path: Union[Path, str]) -> DataFrame:
     full_df['expanded'] = full_df['expanded'].astype(int)
     full_df['solution'] = full_df['solution'].astype(float)
     full_df['weight'] = full_df['weight'].astype(float)
+    full_df['init-h'] = full_df['init-h'].astype(float)
     full_df['epsilon'] = full_df['epsilon'].astype(float)
     full_df['time'] = full_df['time'].astype(float)
 
@@ -42,7 +43,7 @@ def add_solution_quality(df, solutions):
 
 
 def verify_quality(df):
-    if not ((df['quality'] >= 1) & (df['quality'] <= df['weight'])).all():
+    if not (((df['quality'] >= 1) & (df['quality'] <= df['weight'])) | (df['quality'] == 0)).all():
         raise ValueError("Some rows have 'quality' not between 1 and 'weight'.")
 
 
@@ -54,7 +55,7 @@ def parse_args():
 
 
 def get_optimal_solutions(df):
-    filtered_df = df[df['weight'] == 1]
+    filtered_df = df[(df['weight'] == 1) & (df['solution'] != 0)]
     grouped = filtered_df.groupby('id')['solution']
     for id_value, solutions in grouped:
         if len(solutions.unique()) > 1:

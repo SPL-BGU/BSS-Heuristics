@@ -61,3 +61,5 @@ default : all
 SRC_CPP = \
 	paper/Driver.cpp \
 	paper/TohDriver.cpp \
+	paper/StpDriver.cpp \
+	paper/WeightedStpDriver.cpp \
