@@ -32,8 +32,6 @@ def parse_dir(dir_path: Union[Path, str]) -> DataFrame:
     full_df['epsilon'] = full_df['epsilon'].astype(float)
     full_df['time'] = full_df['time'].astype(float)
 
-    optimal_solutions = get_optimal_solutions(full_df)
-    full_df = add_solution_quality(full_df, optimal_solutions)
     return full_df
 
 
@@ -51,6 +49,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Process log directory and output file.")
     parser.add_argument('-l', '--log-dir', type=str, required=True, help="Path to the log directory")
     parser.add_argument('-o', '--output', type=str, required=True, help="Path to the output file")
+    parser.add_argument('-i', '--ignore-quality', action='store_true', help="Ignore solution quality")
     return parser.parse_args()
 
 
@@ -68,7 +67,10 @@ def get_optimal_solutions(df):
 def main():
     args = parse_args()
     df = parse_dir(args.log_dir)
-    verify_quality(df)
+    if not args.ignore_quality:
+        optimal_solutions = get_optimal_solutions(df)
+        df = add_solution_quality(df, optimal_solutions)
+        verify_quality(df)
     if args.output.endswith('.xlsx'):
         df.to_excel(args.output, index=False)
     else:
