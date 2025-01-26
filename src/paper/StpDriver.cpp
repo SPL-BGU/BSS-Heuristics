@@ -24,6 +24,17 @@ const std::vector<int> TEST_PATTERN[2] = {
         {0, 2, 3, 6, 7}
 };
 
+template<class state>
+struct GbfsCompare {
+    // returns true if i2 is preferred over i1
+    bool operator()(const AStarOpenClosedDataWithF<state> &i1, const AStarOpenClosedDataWithF<state> &i2) const {
+        if (fequal(i1.h, i2.h)) {
+            return (fless(i1.g, i2.g));
+        }
+        return fgreater(i1.h, i2.h);
+    }
+};
+
 std::string getPdbName(const MNPuzzleState<4, 4> &goal, const std::string &heuristic, int pid) {
     return "stp_" + heuristic + "_" + std::to_string(std::hash<MNPuzzleState<4, 4>>{}(goal)) + "_" +
            std::to_string(pid) + ".lex";
@@ -110,11 +121,22 @@ void testStp(const ArgParameters &ap) {
             astar.SetHeuristic(heuristic.get());
             astar.SetWeight(ap.weight);
             timer.StartTimer();
-//            astar.GetPath(&env, start, goal, solutionPath);
+            astar.GetPath(&env, start, goal, solutionPath);
             timer.EndTimer();
             printf("[R] alg: wa; solution: %1.0f; init-h: %1.3f; expanded: %llu; time: %1.6fs\n",
                    env.GetPathLength(solutionPath), heuristic->HCost(start, goal),
                    astar.GetNodesExpanded(), timer.GetElapsedTime());
+        }
+        if (ap.hasAlgorithm("GBFS")) {
+            TemplateAStar<MNPuzzleState<4, 4>, slideDir, MNPuzzle<4, 4>, AStarOpenClosed<MNPuzzleState<4, 4>, GbfsCompare<MNPuzzleState<4, 4>>, AStarOpenClosedDataWithF<MNPuzzleState<4, 4>>>> gbfs;
+            gbfs.SetHeuristic(heuristic.get());
+            gbfs.SetWeight(ap.weight);
+            timer.StartTimer();
+            gbfs.GetPath(&env, start, goal, solutionPath);
+            timer.EndTimer();
+            printf("[R] alg: gbfs; solution: %1.0f; init-h: %1.3f; expanded: %llu; time: %1.6fs\n",
+                   env.GetPathLength(solutionPath), heuristic->HCost(start, goal),
+                   gbfs.GetNodesExpanded(), timer.GetElapsedTime());
         }
     }
 
