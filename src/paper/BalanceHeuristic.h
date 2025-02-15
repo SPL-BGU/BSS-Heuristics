@@ -31,6 +31,14 @@ public:
         return epsilon * heuristic_optimal->HCost(a, b) + (1 - epsilon) * heuristic_greedy->HCost(a, b);
     }
 
+    double HOptimalCost(const state &a, const state &b) const{
+        return heuristic_optimal->HCost(a, b);
+    }
+
+    double HGreedyCost(const state &a, const state &b) const{
+        return heuristic_greedy->HCost(a, b);
+    }
+
 protected:
     std::unique_ptr<Heuristic<state>> heuristic_optimal;
     std::unique_ptr<Heuristic<state>> heuristic_greedy;

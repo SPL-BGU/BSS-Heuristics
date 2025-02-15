@@ -7,15 +7,16 @@
 #include "BalanceHeuristic.h"
 #include "STPInstances.h"
 #include "TemplateAStar.h"
+#include "GBFS.h"
 
 namespace balance_wstp {
 
 std::unique_ptr<Heuristic<MNPuzzleState<4, 4>>>
 getHeuristic(const std::string &heuristic, const MNPuzzleState<4, 4> &goal) {
-    if(heuristic=="md"){
-        return std::make_unique<MNPuzzle<4,4>>();
-    } else if (heuristic=="wmd"){
-        auto h = std::make_unique<MNPuzzle<4,4>>();;
+    if (heuristic == "md") {
+        return std::make_unique<MNPuzzle<4, 4>>();
+    } else if (heuristic == "wmd") {
+        auto h = std::make_unique<MNPuzzle<4, 4>>();;
         h->SetWeighted(kHeavy);
         return h;
     } else {
@@ -46,6 +47,12 @@ void testWeightedStp(const ArgParameters &ap) {
     for (int i: ap.instances) {
         MNPuzzleState<4, 4> start = STP::GetKorfInstance(i);
         std::cout << "[I] id: " << i << "; instance: " << start << std::endl;
+        if (ap.norun) {
+            printf("[R] alg: heuristic; init-ho: %1.0f; init-hg: %1.0f\n",
+                   heuristic->HOptimalCost(start, goal),
+                   heuristic->HGreedyCost(start, goal));
+            continue;
+        }
         if (ap.hasAlgorithm("WA")) {
             TemplateAStar<MNPuzzleState<4, 4>, slideDir, MNPuzzle<4, 4>> astar;
             astar.SetHeuristic(heuristic.get());
@@ -53,9 +60,17 @@ void testWeightedStp(const ArgParameters &ap) {
             timer.StartTimer();
             astar.GetPath(&env, start, goal, solutionPath);
             timer.EndTimer();
-            printf("[R] alg: wa; solution: %1.0f; init-h: %1.3f; expanded: %llu; time: %1.6fs\n",
-                   env.GetPathLength(solutionPath), heuristic->HCost(start, goal),
-                   astar.GetNodesExpanded(), timer.GetElapsedTime());
+            printf("[R] alg: wa; solution: %1.0f; expanded: %llu; time: %1.6fs\n",
+                   env.GetPathLength(solutionPath), astar.GetNodesExpanded(), timer.GetElapsedTime());
+        }
+        if (ap.hasAlgorithm("GBFS")) {
+            GBFS::GBFS<MNPuzzleState<4, 4>, slideDir, MNPuzzle<4, 4>> gbfs;
+            gbfs.SetHeuristic(heuristic.get());
+            timer.StartTimer();
+            gbfs.GetPath(&env, start, goal, solutionPath);
+            timer.EndTimer();
+            printf("[R] alg: gbfs; solution: %1.0f;expanded: %llu; time: %1.6fs\n",
+                   env.GetPathLength(solutionPath), gbfs.GetNodesExpanded(), timer.GetElapsedTime());
         }
     }
 }

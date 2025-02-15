@@ -64,6 +64,8 @@ public:
                 if (this->pdb.back() != '/') {
                     this->pdb += '/';
                 }
+            } else if (arg == "-n" || arg == "--no-run") {
+                this->norun = true;
             } else {
                 std::cerr << "Error: Unknown argument: " << arg << std::endl;
                 exit(EXIT_FAILURE);
@@ -180,6 +182,7 @@ public:
     double epsilon = -1;
     double weight = -1;
     std::string pdb;
+    bool norun = false;
 
 private:
     static void verifyValidFlagValue(int argc, char *argv[], int index) {

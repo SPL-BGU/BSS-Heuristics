@@ -7,6 +7,7 @@
 #include "TOH.h"
 #include "BalanceHeuristic.h"
 #include "TemplateAStar.h"
+#include "GBFS.h"
 
 namespace balance_toh {
 void unsupportedPdbExit(const std::string &heuristic) {
@@ -120,6 +121,10 @@ void generateState(TOHState<N> &state, int id) {
     }
 }
 
+double hPhi(double h, double g) {
+    return h;
+}
+
 template<int N>
 void testToh(const ArgParameters &ap) {
     std::cout << "[D] domain: TOH-" << N
@@ -131,20 +136,35 @@ void testToh(const ArgParameters &ap) {
     auto heuristic = getBalanceTohHeuristic(ap.heuristic_optimal, ap.heuristic_greedy, ap.epsilon, goal);
     std::vector<TOHState<N>> solutionPath;
     TOH<N> env;
-    TemplateAStar<TOHState<N>, TOHMove, TOH<N>> astar;
     Timer timer;
-    astar.SetHeuristic(heuristic.get());
-    astar.SetWeight(ap.weight);
     for (int i: ap.instances) {
         TOHState<N> start;
         generateState(start, i);
         std::cout << "[I] id: " << i << "; instance: " << start << std::endl;
+        if (ap.norun) {
+            printf("[R] alg: heuristic; init-ho: %1.0f; init-hg: %1.0f\n",
+                   heuristic->HOptimalCost(start, goal),
+                   heuristic->HGreedyCost(start, goal));
+            continue;
+        }
         if (ap.hasAlgorithm("WA")) {
+            TemplateAStar<TOHState<N>, TOHMove, TOH<N>> astar;
+            astar.SetHeuristic(heuristic.get());
+            astar.SetWeight(ap.weight);
             timer.StartTimer();
             astar.GetPath(&env, start, goal, solutionPath);
             timer.EndTimer();
             printf("[R] alg: wa; solution: %1.0f; expanded: %llu; time: %1.6fs\n", env.GetPathLength(solutionPath),
                    astar.GetNodesExpanded(), timer.GetElapsedTime());
+        }
+        if (ap.hasAlgorithm("GBFS")) {
+            GBFS::GBFS<TOHState<N>, TOHMove, TOH<N>> gbfs;
+            gbfs.SetHeuristic(heuristic.get());
+            timer.StartTimer();
+            gbfs.GetPath(&env, start, goal, solutionPath);
+            timer.EndTimer();
+            printf("[R] alg: gbfs; solution: %1.0f; expanded: %llu; time: %1.6fs\n", env.GetPathLength(solutionPath),
+                   gbfs.GetNodesExpanded(), timer.GetElapsedTime());
         }
     }
 }

@@ -3,6 +3,8 @@
 #include "TohDriver.h"
 #include "StpDriver.h"
 #include "WeightedStpDriver.h"
+#include "MNPuzzle.h"
+#include "STPInstances.h"
 
 void printRunLine(int argc, char *argv[]) {
     std::cout << "[L] ";
@@ -10,6 +12,18 @@ void printRunLine(int argc, char *argv[]) {
         std::cout << argv[i] << " ";
     }
     std::cout << argv[argc - 1] << std::endl;
+}
+
+void test(){
+    MNPuzzle<4, 4> env;
+    MNPuzzle<4, 4> henv;
+    henv.SetWeighted(kHeavy);
+    MNPuzzleState<4, 4> goal;
+    for (int i = 0; i < 100; ++i) {
+        MNPuzzleState<4, 4> start = STP::GetKorfInstance(i);
+        std::cout << i << "," << env.HCost(start,goal) << "," << henv.HCost(start,goal) << std::endl;
+    }
+    exit(0);
 }
 
 int main(int argc, char *argv[]) {

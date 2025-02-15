@@ -7,6 +7,7 @@
 #include "BalanceHeuristic.h"
 #include "STPInstances.h"
 #include "TemplateAStar.h"
+#include "GBFS.h"
 
 namespace balance_stp {
 const std::vector<int> VERTICAL78_PATTERN[2] = {
@@ -24,16 +25,6 @@ const std::vector<int> TEST_PATTERN[2] = {
         {0, 2, 3, 6, 7}
 };
 
-template<class state>
-struct GbfsCompare {
-    // returns true if i2 is preferred over i1
-    bool operator()(const AStarOpenClosedDataWithF<state> &i1, const AStarOpenClosedDataWithF<state> &i2) const {
-        if (fequal(i1.h, i2.h)) {
-            return (fless(i1.g, i2.g));
-        }
-        return fgreater(i1.h, i2.h);
-    }
-};
 
 std::string getPdbName(const MNPuzzleState<4, 4> &goal, const std::string &heuristic, int pid) {
     return "stp_" + heuristic + "_" + std::to_string(std::hash<MNPuzzleState<4, 4>>{}(goal)) + "_" +
@@ -116,6 +107,12 @@ void testStp(const ArgParameters &ap) {
     for (int i: ap.instances) {
         MNPuzzleState<4, 4> start = STP::GetKorfInstance(i);
         std::cout << "[I] id: " << i << "; instance: " << start << std::endl;
+        if (ap.norun) {
+            printf("[R] alg: heuristic; init-ho: %1.0f; init-hg: %1.0f\n",
+                   heuristic->HOptimalCost(start, goal),
+                   heuristic->HGreedyCost(start, goal));
+            continue;
+        }
         if (ap.hasAlgorithm("WA")) {
             TemplateAStar<MNPuzzleState<4, 4>, slideDir, MNPuzzle<4, 4>> astar;
             astar.SetHeuristic(heuristic.get());
@@ -123,20 +120,18 @@ void testStp(const ArgParameters &ap) {
             timer.StartTimer();
             astar.GetPath(&env, start, goal, solutionPath);
             timer.EndTimer();
-            printf("[R] alg: wa; solution: %1.0f; init-h: %1.3f; expanded: %llu; time: %1.6fs\n",
-                   env.GetPathLength(solutionPath), heuristic->HCost(start, goal),
-                   astar.GetNodesExpanded(), timer.GetElapsedTime());
+            printf("[R] alg: wa; solution: %1.0f; expanded: %llu; time: %1.6fs\n",
+                   env.GetPathLength(solutionPath), astar.GetNodesExpanded(), timer.GetElapsedTime());
         }
         if (ap.hasAlgorithm("GBFS")) {
-            TemplateAStar<MNPuzzleState<4, 4>, slideDir, MNPuzzle<4, 4>, AStarOpenClosed<MNPuzzleState<4, 4>, GbfsCompare<MNPuzzleState<4, 4>>, AStarOpenClosedDataWithF<MNPuzzleState<4, 4>>>> gbfs;
+            GBFS::GBFS<MNPuzzleState<4, 4>, slideDir, MNPuzzle<4, 4>> gbfs;
             gbfs.SetHeuristic(heuristic.get());
             gbfs.SetWeight(ap.weight);
             timer.StartTimer();
             gbfs.GetPath(&env, start, goal, solutionPath);
             timer.EndTimer();
-            printf("[R] alg: gbfs; solution: %1.0f; init-h: %1.3f; expanded: %llu; time: %1.6fs\n",
-                   env.GetPathLength(solutionPath), heuristic->HCost(start, goal),
-                   gbfs.GetNodesExpanded(), timer.GetElapsedTime());
+            printf("[R] alg: gbfs; solution: %1.0f; expanded: %llu; time: %1.6fs\n",
+                   env.GetPathLength(solutionPath), gbfs.GetNodesExpanded(), timer.GetElapsedTime());
         }
     }
 
