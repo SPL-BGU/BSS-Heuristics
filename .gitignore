@@ -3,6 +3,9 @@ pdbs/
 data/
 results/
 
+# slurm scripts for parallelization of tasks
+slurm/
+
 # Compiled objects
 src/bin/
 src/objs/
