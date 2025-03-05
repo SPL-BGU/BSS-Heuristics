@@ -5,7 +5,7 @@ weights=(50)
 epsilons=(1 0.99 0.9 0.75 0.5 0.25 0.1 0.01 0)
 
 OUTPUT_DIR="data/wstp"
-CMD="./src/bin/release/balance -d WSTP -ho wmd -hg md -i 0"
+CMD="./src/bin/release/balance -d WSTP -ho wmd -hg md -i 0-100"
 
 # Move to base dir and make dirs for data and heuristics
 cd "$(dirname "$0")/.." || exit 1
