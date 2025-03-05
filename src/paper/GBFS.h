@@ -10,7 +10,7 @@
 #include <iostream>
 
 namespace GBFS {
-template<class state, bool lowg=true>
+template<class state, bool lowg = true>
 struct GbfsCompare {
     // returns true if i2 is preferred over i1
     bool operator()(const AStarOpenClosedDataWithF<state> &i1, const AStarOpenClosedDataWithF<state> &i2) const {
@@ -21,9 +21,8 @@ struct GbfsCompare {
     }
 };
 
-template<typename state, typename action, typename environment, bool lowg=true>
+template<typename state, typename action, typename environment, bool lowg = true>
 using GBFS = TemplateAStar<state, action, environment, AStarOpenClosed<state, GBFS::GbfsCompare<state, lowg>, AStarOpenClosedDataWithF<state>>>;
 }
-
 
 #endif //SRC_PAPER_GBDS_H
