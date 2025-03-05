@@ -69,7 +69,7 @@ void testWeightedStp(const ArgParameters &ap) {
             timer.StartTimer();
             gbfs.GetPath(&env, start, goal, solutionPath);
             timer.EndTimer();
-            printf("[R] alg: gbfs; solution: %1.0f;expanded: %llu; time: %1.6fs\n",
+            printf("[R] alg: gbfs; solution: %1.0f; expanded: %llu; time: %1.6fs\n",
                    env.GetPathLength(solutionPath), gbfs.GetNodesExpanded(), timer.GetElapsedTime());
         }
     }
