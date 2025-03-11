@@ -39,6 +39,10 @@ public:
         return heuristic_greedy->HCost(a, b);
     }
 
+    Heuristic<state> *GetOptimalHeuristic() {
+        return this->heuristic_optimal.get();
+    }
+
 protected:
     std::unique_ptr<Heuristic<state>> heuristic_optimal;
     std::unique_ptr<Heuristic<state>> heuristic_greedy;
