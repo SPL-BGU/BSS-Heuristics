@@ -32,4 +32,12 @@ for i in {10..6..-2}; do
       $CMD -a WA -w "$weight" -e "$epsilon" > "$OUTPUT_DIR/toh_${i}_wa_w${weight}_e${epsilon}.out"
     done
   done
+
+  # IOS
+  for weight in "${weights[@]:1}"; do
+    for epsilon in "${epsilons[@]}"; do
+      echo "Running IOS with w=$weight and e=$epsilon"
+      $CMD -a IOS -w "$weight" -e "$epsilon" > "$OUTPUT_DIR/toh_${i}_ios_w${weight}_e${epsilon}.out"
+    done
+  done
 done

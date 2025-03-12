@@ -30,4 +30,11 @@ for weight in "${weights[@]}"; do
   done
 done
 
+# IOS
+for weight in "${weights[@]:1}"; do
+  for epsilon in "${epsilons[@]}"; do
+    echo "Running IOS with w=$weight and e=$epsilon"
+    $CMD -a IOS -w "$weight" -e "$epsilon" > "$OUTPUT_DIR/stp_ios_w${weight}_e${epsilon}.out"
+  done
+done
 
