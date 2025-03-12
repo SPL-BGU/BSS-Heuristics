@@ -137,25 +137,28 @@ def gen_result_df(result_df, h_df, id_to_solution):
     with open('results/latex/toh.tex', 'w+') as f:
         f.write(latex_str)
 
+
 def write_to_excel(result_df, h_df, filename="results/toh.xlsx"):
     with pd.ExcelWriter(filename) as writer:
         result_df.to_excel(writer, sheet_name="results", index=False)
         h_df.to_excel(writer, sheet_name="heuristics", index=False)
 
+
 def main():
     data_dir = r"data/toh"
     Path("results").mkdir(exist_ok=True)
-    print("Loading data and generating Excel")
+    print("Loading data")
     result_df, h_df = parse_dir(data_dir)
-    write_to_excel(result_df, h_df)
     print("Verifying instance count")
-    verify_count(result_df)
+    verify_count(result_df, True)
     print("Verifying optimal solutions")
     id_to_solution = get_optimal_solutions(result_df)
     print("Adding and verifying solution quality")
     add_solution_quality(result_df, id_to_solution)
     print("Verifying heuristic admissibility")
     verify_heuristics(h_df, id_to_solution)
+    print("Generating Excel")
+    write_to_excel(result_df, h_df)
     print("Generating LaTex tabular code")
     Path("results/latex").mkdir(exist_ok=True)
     gen_result_df(result_df, h_df, id_to_solution)
