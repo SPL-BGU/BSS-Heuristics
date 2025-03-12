@@ -374,6 +374,7 @@ void ImprovedOptimisticSearch<state, action, environment>::DoGreedyStep(std::vec
         // 3. put start back on open
         uint64_t ID;
         openClosedList.Lookup(env->GetStateHash(start), ID);
+        openClosedList.Lookup(ID).h = theOptimalHeuristic->HCost(start, goal);
         openClosedList.Lookup(ID).f = phi(openClosedList.Lookup(ID).h, openClosedList.Lookup(ID).g);
         openClosedList.Reopen(ID);
         // 4. extract path
@@ -395,9 +396,6 @@ void ImprovedOptimisticSearch<state, action, environment>::DoGreedyStep(std::vec
     edgeCosts.resize(0);
     neighborID.resize(0);
     neighborLoc.resize(0);
-
-    //	std::cout << "Expanding: " << openClosedList.Lookup(nodeid).data << " with f:";
-    //	std::cout << openClosedList.Lookup(nodeid).g+openClosedList.Lookup(nodeid).h << std::endl;
 
     env->GetSuccessors(openClosedList.Lookup(nodeid).data, neighbors);
     // 1. load all the children
@@ -465,9 +463,6 @@ void ImprovedOptimisticSearch<state, action, environment>::DoOptimalStep(std::ve
     neighborID.resize(0);
     neighborLoc.resize(0);
 
-    //	std::cout << "Expanding: " << openClosedList.Lookup(nodeid).data << " with f:";
-    //	std::cout << openClosedList.Lookup(nodeid).g+openClosedList.Lookup(nodeid).h << std::endl;
-
     env->GetSuccessors(openClosedList.Lookup(nodeid).data, neighbors);
     // 1. load all the children
     for (unsigned int x = 0; x < neighbors.size(); x++) {
@@ -501,6 +496,7 @@ void ImprovedOptimisticSearch<state, action, environment>::DoOptimalStep(std::ve
                     i.reopened = true;
                     i.parentID = nodeid;
                     i.g = openClosedList.Lookup(nodeid).g + edgeCosts[x];
+                    i.h = theOptimalHeuristic->HCost(neighbors[x], goal);
                     i.f = phi(i.h, i.g);
                     openClosedList.Reopen(neighborID[x]);
                     // This line isn't normally needed, but in some state spaces we might have
@@ -531,6 +527,10 @@ void ImprovedOptimisticSearch<state, action, environment>::DoOptimalStep(std::ve
                                            openClosedList.Lookup(nodeid).g + edgeCosts[x],
                                            h,
                                            nodeid);
+                // New nodes in the optimal search will be expanded optimally and thus can already be labeled reopened.
+                // This fixes a bug where there can be a case where we get a loop in the solution
+                // The newly added node is the last one
+                openClosedList.Lookup(openClosedList.size() - 1).reopened = true;
             }
         }
     }

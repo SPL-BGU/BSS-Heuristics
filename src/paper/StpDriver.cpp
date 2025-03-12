@@ -135,13 +135,13 @@ void testStp(const ArgParameters &ap) {
                    env.GetPathLength(solutionPath), gbfs.GetNodesExpanded(), timer.GetElapsedTime());
         }
         if (ap.hasAlgorithm("IOS")) {
-            ImprovedOptimisticSearch <MNPuzzleState<4, 4>, slideDir, MNPuzzle<4, 4>> ios;
+            ImprovedOptimisticSearch<MNPuzzleState<4, 4>, slideDir, MNPuzzle<4, 4>> ios;
             ios.SetGreedyHeuristic(heuristic.get());
             ios.SetOptimalHeuristic(heuristic->GetOptimalHeuristic());
             ios.SetOptimalityBound(ap.weight);
             double weight = 2 * ap.weight - 1;
             ios.SetWeight(weight);
-            ios.SetPhi([&weight](double h, double g) { return g + weight * h; });
+            ios.SetPhi(([=](double x, double y) { return y / (weight) + x; }));
             timer.StartTimer();
             ios.GetPath(&env, start, goal, solutionPath);
             timer.EndTimer();

@@ -174,7 +174,7 @@ void testToh(const ArgParameters &ap) {
             ios.SetOptimalityBound(ap.weight);
             double weight = 2 * ap.weight - 1;
             ios.SetWeight(weight);
-            ios.SetPhi([&weight](double h, double g) { return g + weight * h; });
+            ios.SetPhi(([=](double x, double y) { return y / (weight) + x; }));
             timer.StartTimer();
             ios.GetPath(&env, start, goal, solutionPath);
             timer.EndTimer();
