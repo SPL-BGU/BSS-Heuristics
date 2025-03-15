@@ -1,7 +1,7 @@
 #!/bin/bash
 
 OUTPUT_DIR="data/stp"
-weights=(50)
+weights=(1 1.2 1.5 2 5 10 20 50)
 epsilons=(1 0.99 0.9 0.75 0.5 0.25 0.1 0.01 0)
 
 OUTPUT_DIR="data/wstp"
@@ -30,7 +30,7 @@ for weight in "${weights[@]}"; do
 done
 
 # IOS
-for weight in "${weights[@]:1}"; do
+for weight in "${weights[@]}"; do
   for epsilon in "${epsilons[@]}"; do
     echo "Running IOS with w=$weight and e=$epsilon"
     $CMD -a IOS -w "$weight" -e "$epsilon" > "$OUTPUT_DIR/stp_ios_w${weight}_e${epsilon}.out"
