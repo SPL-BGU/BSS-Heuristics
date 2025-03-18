@@ -25,7 +25,7 @@ done
 for weight in "${weights[@]}"; do
   for epsilon in "${epsilons[@]}"; do
     echo "Running WA* with w=$weight and e=$epsilon"
-    $CMD -a WA -w "$weight" -e "$epsilon" > "$OUTPUT_DIR/stp_wa_w${weight}_e${epsilon}.out"
+    $CMD -a WA -w "$weight" -e "$epsilon" > "$OUTPUT_DIR/wstp_wa_w${weight}_e${epsilon}.out"
   done
 done
 
@@ -33,6 +33,6 @@ done
 for weight in "${weights[@]}"; do
   for epsilon in "${epsilons[@]}"; do
     echo "Running IOS with w=$weight and e=$epsilon"
-    $CMD -a IOS -w "$weight" -e "$epsilon" > "$OUTPUT_DIR/stp_ios_w${weight}_e${epsilon}.out"
+    $CMD -a IOS -w "$weight" -e "$epsilon" > "$OUTPUT_DIR/wstp_ios_w${weight}_e${epsilon}.out"
   done
 done
