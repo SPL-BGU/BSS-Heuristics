@@ -80,8 +80,7 @@ def verify_heuristics(df, solutions):
         raise ValueError("Some heuristics are not admissible.")
 
 
-def gen_result_df(result_df, h_df, id_to_solution):
-    solution_list = [id_to_solution[i] for i in range(100)]
+def gen_wa_table_latex(result_df, h_df, solution_list):
     gbfs_df = result_df[(result_df['alg'] == 'gbfs')]
     gbfs_pivot = gbfs_df.pivot_table(values=['expanded', 'quality'],
                                      index=['heuristic-optimal', 'heuristic-greedy', 'epsilon'],
@@ -125,7 +124,7 @@ def gen_result_df(result_df, h_df, id_to_solution):
         latex_str += f" & {gbfs_expanded:,} & {gbfs_quality}"
         latex_str += ' \\\\\n'
     latex_str += '\\bottomrule\n\\end{tabular}'
-    with open('results/latex/stp.tex', 'w+') as f:
+    with open('results/latex/stp_wa_table.tex', 'w+') as f:
         f.write(latex_str)
 
 
@@ -133,6 +132,51 @@ def write_to_excel(result_df, h_df, filename="results/stp.xlsx"):
     with pd.ExcelWriter(filename) as writer:
         result_df.to_excel(writer, sheet_name="results", index=False)
         h_df.to_excel(writer, sheet_name="heuristics", index=False)
+
+
+def gen_ios_table_latex(result_df, h_df, solution_list):
+    result_df = result_df[result_df['alg'] == 'ios']
+    pivot = result_df.pivot_table(
+        index=['heuristic-optimal', 'heuristic-greedy', 'epsilon'],
+        columns='weight',
+        values=['expanded', 'quality', 'id'],
+        aggfunc={'expanded': 'mean', 'quality': 'mean', 'id': 'count'}
+    )
+    pivot = pivot.sort_index(level='epsilon', ascending=False).reset_index()
+    latex_str = r"\begin{tabular}{ccccc" + ('r' * 2 * len(WEIGHTS[1:])) + "rr}\n"
+    latex_str += '\\toprule\n\\multirow{2}{*}{Proving} & \\multirow{2}{*}{Finding} & \\multirow{2}{*}{Epsilon} & \\multirow{2}{*}{$h/C^*$} & \\multirow{2}{*}{GDRC} '
+    for weight in WEIGHTS[1:]:
+        latex_str += f' & \\multicolumn{{2}}{{c}}{{{weight}}}'
+    latex_str += ' \\\\\n'
+    for i in range(len(WEIGHTS[1:])):
+        latex_str += f'\\cmidrule(lr){{{6 + 2 * i}-{7 + 2 * i}}}'
+    latex_str += '\n& & & &'
+    for _ in WEIGHTS[1:]:
+        latex_str += ' & \multicolumn{1}{c}{Exp.} & \multicolumn{1}{c}{Qual.}'
+    latex_str += '\\\\\n\\midrule\n'
+
+    # Iterate over each row and print column names
+    for _, row in pivot.iterrows():
+        ho = row[('heuristic-optimal', '')]
+        hg = row[('heuristic-greedy', '')]
+        epsilon = row[('epsilon', '')]
+        subset_df = h_df[(h_df["heuristic-optimal"] == ho) & (h_df["heuristic-greedy"] == hg)]
+        subset_df = subset_df.sort_values(by='id', ascending=True)
+        heuristic_values = epsilon * subset_df['init-ho'] + (1 - epsilon) * subset_df['init-hg']
+        tau, _ = kendalltau(solution_list, heuristic_values)
+
+        hdiff = sum([hv / sc for hv, sc in zip(heuristic_values, solution_list)]) / len(heuristic_values)
+        latex_str += f'{ho} & {hg} & {round_half_up(epsilon, 2)} & {round_half_up(hdiff, 3)} & {round_half_up(tau, 3)}'
+        for weight in WEIGHTS[1:]:
+            if row[('id', weight)] == 100:
+                latex_str += f" & {round_half_up(row[('expanded', weight)], 0):,} & {round_half_up(row[('quality', weight)], 3):,}"
+            else:
+                latex_str += f" & \multicolumn{{2}}{{c}}{{\#{row[('id', weight)]}}}"
+        latex_str += ' \\\\\n'
+
+    latex_str += '\\bottomrule\n\\end{tabular}'
+    with open('results/latex/stp_ios_table.tex', 'w+') as f:
+        f.write(latex_str)
 
 
 def main():
@@ -150,7 +194,9 @@ def main():
     write_to_excel(result_df, h_df)
     print("Generating LaTex tabular code")
     Path("results/latex").mkdir(exist_ok=True)
-    gen_result_df(result_df, h_df, id_to_solution)
+    solution_list = [id_to_solution[i] for i in range(100)]
+    gen_wa_table_latex(result_df, h_df, solution_list)
+    gen_ios_table_latex(result_df, h_df, solution_list)
 
 
 if __name__ == '__main__':
