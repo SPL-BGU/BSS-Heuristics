@@ -56,7 +56,7 @@ This means that you might encounter issues with it. If you encounter any issue, 
 
 ## Citation and Code Attribution
 The new code for the paper can be found in
-[src/apps/embhs](https://github.com/SPL-BGU/PEM-BiHS/tree/main/src/apps/embhs).<br/>
+[src/paper]().<br/>
 As said before, all of these rely on HOG2 which can be found [here](https://github.com/nathansttt/hog2). 
 
 If you find our work interesting or the repo useful, please consider citing this paper:
