@@ -51,8 +51,7 @@ Note that analysis.sh will run on all domains, so it might take a minute or two,
 The final products are saved into results, though manual edits were made to them before putting them into the paper.
 
 ## Known Issues
-The interface to recreate the results was written after the fact, meaning it was not as heavily tested as the code for the papers.
-This means that you might encounter issues with it. If you encounter any issue, find a bug, or need help, feel free to open an issue or contact Lior (the maintainer).
+If you encounter any issue, find a bug, or need help, feel free to open an issue or contact Lior (the maintainer).
 
 ## Citation and Code Attribution
 The new code for the paper can be found in
