@@ -186,7 +186,7 @@ def gen_ios_table_latex(result_df, h_df):
         subset_df = h_df[(h_df["heuristic-optimal"] == ho) & (h_df["heuristic-greedy"] == hg)]
         subset_df = subset_df.sort_values(by='id', ascending=True)
         heuristic_values = epsilon * subset_df['init-ho'] + (1 - epsilon) * subset_df['init-hg']
-        tau, _ = kendalltau(SOLUTIONS, heuristic_values)
+        tau, _ = kendalltau(DISTANCES, heuristic_values)
 
         hdiff = sum([hv / sc for hv, sc in zip(heuristic_values, SOLUTIONS)]) / len(heuristic_values)
         latex_str += f'{ho} & {hg} & {round_half_up(epsilon, 2)} & {round_half_up(hdiff, 3)} & {round_half_up(tau, 3)}'
