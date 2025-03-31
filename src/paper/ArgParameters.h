@@ -156,21 +156,22 @@ public:
     static void help() {
         std::cout << "Usage: program [OPTIONS]\n\n";
         std::cout << "Options:\n";
-        std::cout << "  -d, --domain <DOMAIN>          Specify the domain.\n";
-        std::cout << "  -i, --instances <R1 R2 R3>       Specify a list of instance ranges (e.g., 1-3 which represents "
-                     "[1,3)) or single instances (i.e., 3).\n";
-        std::cout << "  -ho, --heuristic-optimal <HEURISTIC>    Specify the optimal heuristic.\n";
-        std::cout << "  -hg, --heuristic-greedy <HEURISTIC>    Specify the greedy heuristic.\n";
-        std::cout << "  -a, --algorithms <A1 A2 ...>   Specify a list of algorithms.\n";
-        std::cout << "  -w, --weights <W1 W2 ...>      Specify a list of heuristic weights.\n";
-        std::cout << "  -p, --pdb <DIR>    Specify the directory which contains the PDB files.\n";
-        std::cout << "  --help                         Show this help message and exit.\n\n";
+        std::cout << "  -d, --domain <DOMAIN>              Specify the domain.\n";
+        std::cout << "  -i, --instances <R1 R2 ...>        ";
+        std::cout << "Specify instance ranges (e.g., 1-3 for [1,3)) or single instances (e.g., 3).\n";
+        std::cout << "  -ho, --heuristic-optimal <HEUR>    Specify the optimal heuristic.\n";
+        std::cout << "  -hg, --heuristic-greedy <HEUR>     Specify the greedy heuristic.\n";
+        std::cout << "  -a, --algorithms <A1 A2 ...>       Specify a list of algorithms.\n";
+        std::cout << "  -w, --weight <W>                   Specify the heuristic weight (must be >= 1).\n";
+        std::cout << "  -e, --epsilon <E|N/D>              Specify epsilon as a decimal or fraction (N/D format).\n";
+        std::cout << "  -p, --pdb <DIR>                    Specify the directory containing PDB files.\n";
+        std::cout << "  -n, --no-run                       Disable actual execution (heuristic calculation mode).\n";
+        std::cout << "  --help                             Show this help message and exit.\n\n";
         std::cout << "Examples:\n";
-        std::cout << "  program --domain planning -i 1-5 7 "
-                  << "--heuristic-optimal h1 --heuristic-greedy h2 --algorithms a1 a2\n";
-        std::cout << "  program -d logistics -i 10 -h heuristic1 -a algorithm1\n";
+        std::cout
+                << "  program --domain planning -i 1-5 7 --heuristic-optimal h1 --heuristic-greedy h2 --algorithms a1 a2\n";
+        std::cout << "  program -d logistics -i 10 -ho heuristic1 -a algorithm1 -w 1.5 -e 3/4\n";
 
-        // Exit the program
         std::exit(EXIT_SUCCESS);
     }
 
