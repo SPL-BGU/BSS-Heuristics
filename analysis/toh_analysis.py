@@ -201,7 +201,7 @@ def main():
     print("Verifying heuristic admissibility")
     verify_heuristics(h_df, id_to_solution)
     print("Generating Excel")
-    # write_to_excel(result_df, h_df)
+    write_to_excel(result_df, h_df)
     print("Generating LaTex tabular code")
     Path("results/latex").mkdir(exist_ok=True)
     solution_list = [id_to_solution[i] for i in range(100)]
