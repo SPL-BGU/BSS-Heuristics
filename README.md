@@ -3,7 +3,7 @@
   <a href=""><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg"></a>
 </p>
 
-The code for his repo is based on Prof. Nathan Sturtevant's HOG2 implementation which can be
+The code for this repo is based on Prof. Nathan Sturtevant's HOG2 implementation which can be
 found [here](https://github.com/nathansttt/hog2). <br/>
 The code has been mainly run on the Ubuntu operating system using WSL and natively. <br/>
 
@@ -55,7 +55,7 @@ If you encounter any issue, find a bug, or need help, feel free to open an issue
 
 ## Citation and Code Attribution
 The new code for the paper can be found in
-[src/paper]().<br/>
+[src/paper](src/paper).<br/>
 As said before, all of these rely on HOG2 which can be found [here](https://github.com/nathansttt/hog2). 
 
-If you find our work interesting or the repo useful, please consider citing this paper:
+If you find our work interesting or the repo useful, please consider citing this paper.
