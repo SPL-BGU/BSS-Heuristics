@@ -1,9 +1,11 @@
+import itertools
 import math
 from decimal import Decimal, ROUND_HALF_UP
 from os import PathLike
 from pathlib import Path
 
 import pandas as pd
+from matplotlib import pyplot as plt
 from pandas import DataFrame
 from scipy.stats import kendalltau
 
@@ -209,6 +211,102 @@ def write_to_excel(result_df, h_df, filename="results/wstp.xlsx"):
         h_df.to_excel(writer, sheet_name="heuristics", index=False)
 
 
+def generate_ios_figure(df, expanded=True, legend=True):
+    ios_df = df[df["alg"] == 'ios']
+    column = 'expanded' if expanded else 'quality'
+    result = {
+        eps: group.groupby("weight").filter(lambda g: g["id"].count() == 100).groupby("weight")[column].mean().to_dict()
+        for eps, group in ios_df.groupby("epsilon")
+    }
+
+    all_weights = ['1', '1.2', '1.5', '2', '5', '10', '20', '50']
+
+    colors = ['#000000', '#E69F00', '#56B4E9', '#009E73', '#F0E442', '#0072B2', '#D55E00', '#CC79A7', '#72CE6F']
+    linestyles = ['-', '--', '-.', ':']
+    markers = ['o', 's', 'D', '^', 'v', '*', 'x', 'P', 'H', '+']
+
+    style_cycler = zip(itertools.cycle(colors),
+                       itertools.cycle(linestyles),
+                       itertools.cycle(markers))
+
+    plt.figure(figsize=(12, 5))
+
+    for (eps, data), (color, ls, marker) in zip(result.items(), style_cycler):
+        y = [data.get(float(w), None) for w in all_weights]
+        plt.plot(all_weights, y, label=f"ε={eps}", color=color,
+                 linestyle=ls, marker=marker, markersize=14, linewidth=4)
+
+    plt.xlabel('Suboptimality Bound', fontsize=26, fontweight='bold')
+    if expanded:
+        plt.margins(x=0.003)
+        plt.ylim(ymin=10 ** 3, ymax=10 ** 6)
+        plt.yscale('log')
+    else:
+        plt.margins(x=0.003)
+        plt.ylim(ymin=0.990)
+
+    plt.xticks(fontsize=22, fontweight='bold')
+    plt.yticks(fontsize=22, fontweight='bold')
+
+    plt.ylabel(column.capitalize(), fontsize=26, fontweight='bold')
+    if legend:
+        plt.legend(frameon=True, ncol=2, prop={'size': 22, 'weight': 'bold'})
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig(f'results/figures/wstp_ios_{"expanded" if expanded else "quality"}.pdf')
+
+
+def generate_wa_figure(df, expanded=True, legend=True):
+    wa_df = df[df["alg"] == 'wa']
+    gbfs_df = df[df["alg"] == 'gbfs']
+    column = 'expanded' if expanded else 'quality'
+    result = {}
+    for eps, group in wa_df.groupby("epsilon"):
+        eps_result = group.groupby("weight").filter(lambda g: g["id"].count() == 100).groupby("weight")[
+            column].mean().to_dict()
+        eps_result = {str(int(k) if int(k) == k else k): v for k, v in eps_result.items()}
+        gbfs_group = gbfs_df[gbfs_df["epsilon"] == eps]
+        if gbfs_group["id"].count() == 100:
+            eps_result["gbfs"] = gbfs_group[column].mean()
+        result[eps] = eps_result
+
+    all_weights = ['1', '1.2', '1.5', '2', '5', '10', '20', '50', 'GBFS']
+
+    colors = ['#000000', '#E69F00', '#56B4E9', '#009E73', '#F0E442', '#0072B2', '#D55E00', '#CC79A7', '#72CE6F']
+    linestyles = ['-', '--', '-.', ':']
+    markers = ['o', 's', 'D', '^', 'v', '*', 'x', 'P', 'H', '+']
+
+    style_cycler = zip(itertools.cycle(colors),
+                       itertools.cycle(linestyles),
+                       itertools.cycle(markers))
+
+    plt.figure(figsize=(12, 5))
+
+    for (eps, data), (color, ls, marker) in zip(result.items(), style_cycler):
+        y = [data.get(w.lower(), None) for w in all_weights]
+        plt.plot(all_weights, y, label=f"ε={eps}", color=color,
+                 linestyle=ls, marker=marker, markersize=14, linewidth=4)
+
+    plt.xlabel('Suboptimality Bound', fontsize=26, fontweight='bold')
+    if expanded:
+        plt.margins(x=0.003)
+        plt.ylim(ymin=10 ** 3, ymax=10 ** 7)
+        plt.yscale('log')
+    else:
+        plt.margins(x=0.003)
+        plt.ylim(ymin=0.990)
+
+    plt.xticks(fontsize=22, fontweight='bold')
+    plt.yticks(fontsize=22, fontweight='bold')
+
+    plt.ylabel(column.capitalize(), fontsize=26, fontweight='bold')
+    if legend:
+        plt.legend(frameon=True, ncol=2, prop={'size': 22, 'weight': 'bold'})
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig(f'results/figures/wstp_wa_{"expanded" if expanded else "quality"}.pdf')
+
+
 def main():
     data_dir = r"data/wstp"
     Path("results").mkdir(exist_ok=True)
@@ -224,6 +322,11 @@ def main():
     Path("results/latex").mkdir(exist_ok=True)
     gen_wa_table_latex(result_df, h_df)
     gen_ios_table_latex(result_df, h_df)
+    print("Generating figures")
+    generate_wa_figure(result_df, True, False)
+    generate_wa_figure(result_df, False, False)
+    generate_ios_figure(result_df, True, False)
+    generate_ios_figure(result_df, False, True)
 
 
 if __name__ == '__main__':

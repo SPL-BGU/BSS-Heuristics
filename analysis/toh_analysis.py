@@ -1,3 +1,4 @@
+import itertools
 import math
 from ctypes import Union
 from decimal import Decimal, ROUND_HALF_UP
@@ -5,6 +6,7 @@ from os import PathLike
 from pathlib import Path
 
 import pandas as pd
+from matplotlib import pyplot as plt
 from pandas import DataFrame
 from scipy.stats import kendalltau
 
@@ -187,6 +189,100 @@ def write_to_excel(result_df, h_df, filename="results/toh.xlsx"):
         h_df.to_excel(writer, sheet_name="heuristics", index=False)
 
 
+def generate_ios_figure(df, heuristic, expanded=True, legend=True):
+    ios_df = df[(df["alg"] == 'ios') & (df["heuristic-optimal"] == heuristic)]
+    column = 'expanded' if expanded else 'quality'
+    result = {
+        eps: group.groupby("weight").filter(lambda g: g["id"].count() == 100).groupby("weight")[column].mean().to_dict()
+        for eps, group in ios_df.groupby("epsilon")
+    }
+
+    all_weights = ['1', '1.2', '1.5', '2', '5', '10']
+
+    colors = ['#000000', '#E69F00', '#56B4E9', '#009E73', '#F0E442', '#0072B2', '#D55E00', '#CC79A7', '#72CE6F']
+    linestyles = ['-', '--', '-.', ':']
+    markers = ['o', 's', 'D', '^', 'v', '*', 'x', 'P', 'H', '+']
+
+    style_cycler = zip(itertools.cycle(colors),
+                       itertools.cycle(linestyles),
+                       itertools.cycle(markers))
+
+    plt.figure(figsize=(12, 5))
+
+    for (eps, data), (color, ls, marker) in zip(result.items(), style_cycler):
+        y = [data.get(float(w), None) for w in all_weights]
+        plt.plot(all_weights, y, label=f"ε={eps}", color=color,
+                 linestyle=ls, marker=marker, markersize=14, linewidth=4)
+
+    plt.xlabel('Suboptimality Bound', fontsize=26, fontweight='bold')
+    if expanded:
+        plt.margins(x=0.003)
+        plt.yscale('log')
+    else:
+        plt.margins(x=0.003)
+        plt.ylim(ymin=0.990)
+
+    plt.xticks(fontsize=22, fontweight='bold')
+    plt.yticks(fontsize=22, fontweight='bold')
+
+    plt.ylabel(column.capitalize(), fontsize=26, fontweight='bold')
+    if legend:
+        plt.legend(frameon=True, ncol=2, prop={'size': 22, 'weight': 'bold'})
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig(f'results/figures/toh_{heuristic}_ios_{"expanded" if expanded else "quality"}.pdf')
+
+
+def generate_wa_figure(df, heuristic, expanded=True, legend=True):
+    wa_df = df[(df["alg"] == 'wa') & (df["heuristic-optimal"] == heuristic)]
+    gbfs_df = df[(df["alg"] == 'gbfs') & (df["heuristic-optimal"] == heuristic)]
+    column = 'expanded' if expanded else 'quality'
+    result = {}
+    for eps, group in wa_df.groupby("epsilon"):
+        eps_result = group.groupby("weight").filter(lambda g: g["id"].count() == 100).groupby("weight")[
+            column].mean().to_dict()
+        eps_result = {str(int(k) if int(k) == k else k): v for k, v in eps_result.items()}
+        gbfs_group = gbfs_df[gbfs_df["epsilon"] == eps]
+        if gbfs_group["id"].count() == 100:
+            eps_result["gbfs"] = gbfs_group[column].mean()
+        result[eps] = eps_result
+
+    all_weights = ['1', '1.2', '1.5', '2', '5', '10', 'GBFS']
+
+    colors = ['#000000', '#E69F00', '#56B4E9', '#009E73', '#F0E442', '#0072B2', '#D55E00', '#CC79A7', '#72CE6F']
+    linestyles = ['-', '--', '-.', ':']
+    markers = ['o', 's', 'D', '^', 'v', '*', 'x', 'P', 'H', '+']
+
+    style_cycler = zip(itertools.cycle(colors),
+                       itertools.cycle(linestyles),
+                       itertools.cycle(markers))
+
+    plt.figure(figsize=(12, 5))
+
+    for (eps, data), (color, ls, marker) in zip(result.items(), style_cycler):
+        y = [data.get(w.lower(), None) for w in all_weights]
+        plt.plot(all_weights, y, label=f"ε={eps}", color=color,
+                 linestyle=ls, marker=marker, markersize=14, linewidth=4)
+
+    plt.xlabel('Suboptimality Bound', fontsize=26, fontweight='bold')
+    if expanded:
+        plt.margins(x=0.003)
+        plt.yscale('log')
+    else:
+        plt.margins(x=0.003)
+        plt.ylim(ymin=0.990)
+
+    plt.xticks(fontsize=22, fontweight='bold')
+    plt.yticks(fontsize=22, fontweight='bold')
+
+    plt.ylabel(column.capitalize(), fontsize=26, fontweight='bold')
+    if legend:
+        plt.legend(frameon=True, ncol=2, prop={'size': 22, 'weight': 'bold'})
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig(f'results/figures/toh_{heuristic}_wa_{"expanded" if expanded else "quality"}.pdf')
+
+
 def main():
     data_dir = r"data/toh"
     Path("results").mkdir(exist_ok=True)
@@ -201,12 +297,26 @@ def main():
     print("Verifying heuristic admissibility")
     verify_heuristics(h_df, id_to_solution)
     print("Generating Excel")
-    write_to_excel(result_df, h_df)
+    # write_to_excel(result_df, h_df)
     print("Generating LaTex tabular code")
     Path("results/latex").mkdir(exist_ok=True)
     solution_list = [id_to_solution[i] for i in range(100)]
     gen_wa_table_latex(result_df, h_df, solution_list)
     gen_ios_table_latex(result_df, h_df, solution_list)
+    print("Generating figures")
+    generate_ios_figure(result_df, '10+2', True, False)
+    generate_ios_figure(result_df, '10+2', False, False)
+    generate_ios_figure(result_df, '8+4', True, False)
+    generate_ios_figure(result_df, '8+4', False, False)
+    generate_ios_figure(result_df, '6+6', True, False)
+    generate_ios_figure(result_df, '6+6', False, True)
+    generate_wa_figure(result_df, '10+2', True, False)
+    generate_wa_figure(result_df, '10+2', False, False)
+    generate_wa_figure(result_df, '8+4', True, False)
+    generate_wa_figure(result_df, '8+4', False, False)
+    generate_wa_figure(result_df, '6+6', True, False)
+    generate_wa_figure(result_df, '6+6', False, True)
+
 
 
 if __name__ == '__main__':
